@@ -14,7 +14,7 @@ function main()
     input = readlines("day2/input.txt")
     m = [parseRow(row) for row in input]
     println("Part 1: ", (1:length(input))[validRow.(m)] |> sum)
-    println("Part 2: ", sum(x["red"] * x["green"] * x["blue"] for x in m))
+    println("Part 2: ", values.(m) .|> prod |> sum)
 end
 
 main()
