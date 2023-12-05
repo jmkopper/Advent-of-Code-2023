@@ -2,9 +2,8 @@ function parseRow(row)
     vals = split(split(row, ":")[2], [',', ';']) .|> strip
     rgb = Dict("red" => 0, "blue" => 0, "green" => 0)
     for v in vals
-        s = split(v)
-        color, count = s[2], parse(Int, s[1])
-        rgb[color] = max(count, rgb[color])
+        count, color = split(v)
+        rgb[color] = max(parse(Int, count), rgb[color])
     end
     return rgb
 end
