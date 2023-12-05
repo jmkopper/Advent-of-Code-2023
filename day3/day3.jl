@@ -1,5 +1,3 @@
-using Base.Iterators
-
 function readFile(filename)
     return open(filename) do f
         lines = read(f, String) |> x -> split(x, "\n")
@@ -10,50 +8,96 @@ end
 
 isNum(x)::Bool = tryparse(Int64, x) !== nothing
 
-function findSymbols(input)
-    coords = [(i, j) for i in eachindex(input), j in eachindex(input[1])]
-    return(filter(((r,c),) -> input[r][c] != "." && !isNum(input[r][c]), coords))
+function findNumberIndices(row)::Vector{UnitRange{Int}}
+    indices::Vector{UnitRange{Int}} = []
+    inNumber = false
+    left, right = 1, 1
+    for (i, char) in enumerate(row)
+        if isNum(char)
+            if !inNumber
+                left = i
+            end
+            right = i
+            inNumber = true
+        else
+            if inNumber
+                push!(indices, left:right)
+            end
+            inNumber = false
+        end
+    end
+    if inNumber
+        push!(indices, left:right)
+    end
+    return indices
+end
+
+function hasAdjacentSymbol(input, row, range::UnitRange{Int})::Bool
+    dirs = [x for x in -1:1 if x + row > 0 && x + row <= length(input)]
+    effectiveRange = max(range.start-1, 1):min(range.stop+1, length(input[1]))
+    for d in dirs
+        if any(x != "." && !isNum(x) for x in input[d + row][effectiveRange])
+            return true
+        end
+    end
+    return false
+end
+
+function part1(input)
+    total = 0
+    for (rowIndex, row) in enumerate(input)
+        rs = findNumberIndices(row)
+        ns = [parse(Int, join(row[r])) for r in rs]
+        m = [hasAdjacentSymbol(input, rowIndex, r) for r in rs]
+        total += sum(ns[m])
+    end
+    return total
 end
 
 function findStars(input)
     coords = [(i, j) for i in eachindex(input), j in eachindex(input[1])]
-    return(filter(((r,c),) -> input[r][c] == "*", coords))
+    return (filter(((r, c),) -> input[r][c] == "*", coords))
 end
 
-function getNumFromIndex(input, r, c)::Int64
-    rightDigits = takewhile(isNum, input[r][c:end]) |> join
-    leftDigits = takewhile(isNum, reverse(input[r][1:c-1])) |> join |> reverse
-    return tryparse(Int64, leftDigits*rightDigits)
-end
-
-function findNums(symbCoords, input)::Vector{Int64}
-    nrows, ncols = length(input), length(input[1])
-    r, c = symbCoords
-    dirs = [(r-1, c), (r-1, c-1), (r-1, c+1), (r, c-1), (r, c+1), (r+1, c), (r+1, c-1), (r+1, c+1)]
-    filter!(((r,c),) -> r > 0 && r <= nrows && c > 0 && c <= ncols && isNum(input[r][c]), dirs)
-    vals = [getNumFromIndex(input, x, y) for (x, y) in dirs]
-    return unique(vals)
+function getRangeFromIndex(row, idx)
+    left, right = idx, idx
+    while left > 1 && isNum(row[left-1])
+        left -= 1
+    end
+    while right < length(row) && isNum(row[right+1])
+        right += 1
+    end
+    return left:right
 end
 
 function findGears(symbCoords, input)::Int64
     nrows, ncols = length(input), length(input[1])
     r, c = symbCoords
-    dirs = [(r-1, c), (r-1, c-1), (r-1, c+1), (r, c-1), (r, c+1), (r+1, c), (r+1, c-1), (r+1, c+1)]
-    filter!(((r,c),) -> r > 0 && r <= nrows && c > 0 && c <= ncols && isNum(input[r][c]), dirs)
-    vals = unique([getNumFromIndex(input, x, y) for (x, y) in dirs])
-    if length(vals) == 2
-        return vals[1] * vals[2]
-    end
-    return 0
+    dirs = [
+        (r - 1, c),
+        (r - 1, c - 1),
+        (r - 1, c + 1),
+        (r, c - 1),
+        (r, c + 1),
+        (r + 1, c),
+        (r + 1, c - 1),
+        (r + 1, c + 1),
+    ]
+    filter!(
+        ((r, c),) -> r > 0 && r <= nrows && c > 0 && c <= ncols && isNum(input[r][c]),
+        dirs,
+    )
+    indices = unique([(r, getRangeFromIndex(input[r], c)) for (r, c) in dirs])
+    vals = [parse(Int, join(input[r][range])) for (r, range) in indices]
+
+    return length(vals) == 2 ? vals[1] * vals[2] : 0
 end
 
 function main()
     input = readFile("day3/input.txt")
-    symbols = findSymbols(input)
     stars = findStars(input)
-    nums = vcat([findNums(symbol, input) for symbol in symbols]...)
     gears = [findGears(star, input) for star in stars]
-    println("Part 1: ", sum(nums))
+    println("Part 1: ", part1(input))
     println("Part 2: ", sum(gears))
 end
 
