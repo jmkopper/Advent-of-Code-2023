@@ -9,16 +9,6 @@ struct OptimizedHand
     new::Hand
 end
 
-@enum HandType begin
-    high
-    pair
-    twopair
-    three
-    full
-    four
-    five
-end
-
 const VALS = Dict(string(i) => i for i in 2:9)
 VALS["T"] = 10
 VALS["J"] = 1
@@ -26,19 +16,13 @@ VALS["Q"] = 12
 VALS["K"] = 13
 VALS["A"] = 14
 
-function handType(h::Hand)::HandType
+function handType(h::Hand)::Int
     counts = Dict(i => length(h.cards[h.cards .== i]) for i in h.cards)
-    if length(counts) == 1
-        return five
-    elseif length(counts) == 2
-        return maximum(values(counts)) == 4 ? four : full
-    elseif length(counts) == 3
-        return maximum(values(counts)) == 3 ? three : twopair
-    elseif length(counts) == 4
-        return pair
-    else
-        return high
-    end
+    length(counts) == 1 && return 6
+    length(counts) == 2 && return maximum(values(counts)) == 4 ? 5 : 4
+    length(counts) == 3 && return maximum(values(counts)) == 3 ? 3 : 2
+    length(counts) == 4 && return 1
+    return 0
 end
 
 function cmpCards(a::Vector{String}, b::Vector{String})::Bool
@@ -56,21 +40,16 @@ function Base.isless(a::OptimizedHand, b::OptimizedHand)::Bool
 end
 
 function optimizeHand(h::Hand)::OptimizedHand
-    if !("J" in h.cards)
-        return OptimizedHand(h, h)
-    end
+    all(h.cards .== "J") && return OptimizedHand(h, Hand(["A" for _ in 1:5]))
 
-    best = Hand(copy(h.cards))
-    best.cards[best.cards .== "J"] .= "A"
-    jndices = findall(==("J"), h.cards)
-    cards = Set(h.cards[h.cards .!= "J"])
-    for comb in Iterators.product((cards for _ in 1:length(jndices))...)
-        newhand = Hand(copy(h.cards))
-        newhand.cards[jndices] .= [x for x in comb]
-        best = max(best, newhand)
-    end
+    counts = Dict(i => length(h.cards[h.cards .== i]) for i in h.cards)
+    delete!(counts, "J")
 
-    return OptimizedHand(h, best)
+    top = collect(keys(counts))[argmax(collect(values(counts)))]
+    new = Hand(copy(h.cards))
+    new.cards[new.cards .== "J"] .= top
+    
+    return OptimizedHand(h, new)
 end
 
 function main()
