@@ -1,8 +1,3 @@
-function makeNodes(input)
-    nodes = Dict(line[1:3] => (line[8:10], line[13:15]) for line in input)
-    return nodes
-end
-
 function part1(nodes, start, stop, dirs)
     steps, loops = 0, 0
     m = length(dirs)
@@ -39,7 +34,7 @@ end
 function main()
     input = readlines("day8/input.txt")
     dirs = split(input[1], "")
-    nodes = makeNodes(input[3:end])
+    nodes = Dict(line[1:3] => (line[8:10], line[13:15]) for line in input[3:end])
 
     println("Part 1: ", part1(nodes, "AAA", "ZZZ", dirs))
 
