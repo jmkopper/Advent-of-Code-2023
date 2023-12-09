@@ -10,7 +10,7 @@ part2(history) = (foldr(-, d[1] for d in dtz([row])) for row in history) |> sum
 
 function main()
     input = readlines("day9/input.txt")
-    history = [split(line, " ") .|> x -> parse(Int, x) for line in input]
+    history = [parse.(Int, split(line, " ")) for line in input]
     println("Part 1: ", part1(history))
     println("Part 2: ", part2(history))
 end
