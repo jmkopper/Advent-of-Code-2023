@@ -1,5 +1,3 @@
-using Combinatorics
-
 function dist(p, q, emptyRows, emptyCols, scale)
     r1, r2 = max(p[1], q[1]), min(p[1], q[1])
     c1, c2 = max(p[2], q[2]), min(p[2], q[2])
@@ -9,11 +7,11 @@ function dist(p, q, emptyRows, emptyCols, scale)
 end
 
 function addDists(grid, scale)
-    galaxies = [(r, c) for r = 1:size(grid, 1), c = 1:size(grid, 2)]
-    galaxies = filter(x -> grid[x[1], x[2]] == '#', galaxies)
+    gxs = [(r, c) for r = 1:size(grid, 1), c = 1:size(grid, 2)]
+    gxs = filter(x -> grid[x[1], x[2]] == '#', gxs)
     erows = filter(r -> all(grid[r, :] .== '.'), 1:size(grid, 1))
     ecols = filter(c -> all(grid[:, c] .== '.'), 1:size(grid, 2))
-    return sum(dist(p, q, erows, ecols, scale) for (p, q) in combinations(galaxies, 2))
+    return sum(sum(dist(p, q, erows, ecols, scale) for q in gxs[i+1:end]) for (i, p) in enumerate(gxs[1:end-1]))
 end
 
 function main()
