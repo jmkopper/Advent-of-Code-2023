@@ -6,12 +6,14 @@ function dist(p, q, emptyRows, emptyCols, scale)
     return (r1 - r2) + (c1 - c2) + crossCols * (scale - 1) + crossRows * (scale - 1)
 end
 
+combs(g) = vcat(([(p, q) for q in g[i+1:end]] for (i, p) in enumerate(g[1:end-1]))...)
+
 function addDists(grid, scale)
     gxs = [(r, c) for r = 1:size(grid, 1), c = 1:size(grid, 2)]
     gxs = filter(x -> grid[x[1], x[2]] == '#', gxs)
     erows = filter(r -> all(grid[r, :] .== '.'), 1:size(grid, 1))
     ecols = filter(c -> all(grid[:, c] .== '.'), 1:size(grid, 2))
-    return sum(sum(dist(p, q, erows, ecols, scale) for q in gxs[i+1:end]) for (i, p) in enumerate(gxs[1:end-1]))
+    return sum(dist(p, q, erows, ecols, scale) for (p, q) in combs(gxs))
 end
 
 function main()
