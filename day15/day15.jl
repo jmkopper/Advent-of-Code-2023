@@ -1,24 +1,20 @@
-struct Lens
-    label::String
-    focalLength::Int
-end
-
 hash(xs) = reduce((x, c) -> (x + Int(c)) * 17 % 256, xs, init=0)
+scoreBox(box) = length(box) == 0 ? 0 : sum(i * lens[2] for (i, lens) in enumerate(box))
 
 function part2(steps)
-    boxes::Vector{Vector{Lens}} = [[] for _ in 1:256]
+    boxes = [[] for _ in 1:256]
 
     for step in steps
         typeIdx = findfirst(x -> x == '-' || x == '=', step)
         label = step[1:typeIdx-1]
         boxNum = hash(label) + 1 # smh
-        labels = [lens.label for lens in boxes[boxNum]]
+        labels = [lens[1] for lens in boxes[boxNum]]
         labelIdx = findfirst(==(label), labels)
 
         if step[typeIdx] == '-'
             labelIdx !== nothing && deleteat!(boxes[boxNum], labelIdx)
         else
-            newLens = Lens(label, parse(Int, step[typeIdx+1:end]))
+            newLens = (label, parse(Int, step[typeIdx+1:end]))
             if labelIdx === nothing
                 push!(boxes[boxNum], newLens)
             else
@@ -29,11 +25,6 @@ function part2(steps)
     end
 
     return sum(i * scoreBox(box) for (i, box) in enumerate(boxes))
-end
-
-function scoreBox(box::Vector{Lens})
-    length(box) == 0 && return 0
-    sum(i * lens.focalLength for (i, lens) in enumerate(box))
 end
 
 function main()
