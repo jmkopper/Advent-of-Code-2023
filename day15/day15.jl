@@ -3,15 +3,7 @@ struct Lens
     focalLength::Int
 end
 
-function hash(xs::AbstractString)::Int
-    cur = 0
-    for c in xs
-        cur += Int(c)
-        cur *= 17
-        cur %= 256
-    end
-    return cur
-end
+hash(xs) = reduce((x, c) -> (x + Int(c)) * 17 % 256, xs, init=0)
 
 function part2(steps)
     boxes::Vector{Vector{Lens}} = [[] for _ in 1:256]
