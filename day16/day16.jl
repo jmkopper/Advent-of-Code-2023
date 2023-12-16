@@ -42,12 +42,20 @@ function nextCoords(grid, dir, coords)
     return [b for b in n if withinGrid(grid, b.coords)]
 end
 
+function pushOrAdd!(d, k, v)
+    if haskey(d, k)
+        push!(d[k], v)
+    else
+        d[k] = [v]
+    end
+end
+
 function energize!(grid, beam::Beam, visited)
     if haskey(visited, beam.coords) && beam.dir in visited[beam.coords]
         return
     end
 
-    get!(visited, beam.coords, [beam.dir])
+    pushOrAdd!(visited, beam.coords, beam.dir)
 
     for n in nextCoords(grid, beam.dir, beam.coords)
         energize!(grid, n, visited)
