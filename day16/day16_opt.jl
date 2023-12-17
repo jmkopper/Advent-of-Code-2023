@@ -52,36 +52,54 @@ end
     end
 end
 
-function energize!(grid, beam::Beam, visited)
+function energize!(grid, beam::Beam, visited, exits)
     r, c = beam.coords
     !iszero(visited[r,c] & beam.dir) && return
 
     visited[r,c] |= beam.dir
-
-    for n in nextCoords(grid, beam.dir, beam.coords) |> filter(x -> withinGrid(grid, x.coords))
-        energize!(grid, n, visited)
+    valid_neighbors = nextCoords(grid, beam.dir, beam.coords) |> filter(x -> withinGrid(grid, x.coords))
+    isempty(valid_neighbors) && push!(exits, (r,c))
+    for n in valid_neighbors
+        energize!(grid, n, visited, exits)
     end
-    return visited
+    # return visited
 end
 
-@inline function part1(input, init = Beam((1, 1), 0x2))
+@inline function part1(input, init = Beam((1, 1), 0x2); exits = Set())
     visited = zeros(UInt8, size(input))
-    energize!(input, init, visited)
-    return count(!iszero, visited)
+    energize!(input, init, visited, exits)
+    return count(!iszero, visited), exits
 end
 
 function part2(input)
     best = 0
     nrows, ncols = size(input)
+    exits = Set()
 
     for c = 1:ncols
-        best = max(best, part1(input, Beam((1, c), 0x4)))
-        best = max(best, part1(input, Beam((nrows, c), 0x1)))
+        if !((1, c) in exits)
+            v, e = part1(input, Beam((1, c), 0x4))
+            push!(exits, e...)
+            best = max(best, v)
+        end
+        if !((nrows, c) in exits)
+            v, e = part1(input, Beam((nrows, c), 0x1))
+            push!(exits, e...)
+            best = max(best, v)
+        end
     end
 
     for r = 1:nrows
-        best = max(best, part1(input, Beam((r, 1), 0x2)))
-        best = max(best, part1(input, Beam((r, ncols), 0x8)))
+        if !((r, 1) in exits)
+            v, e = part1(input, Beam((r, 1), 0x2))
+            push!(exits, e...)
+            best = max(best, v)
+        end
+        if !((r, ncols) in exits)
+            v, e = part1(input, Beam((r, ncols), 0x8))
+            best = max(best, v)
+            push!(exits, e...)
+        end
     end
 
     return best
@@ -90,7 +108,7 @@ end
 
 function main()
     input = stack(collect.(readlines("day16/input.txt")), dims = 1)
-    println("Part 1: ", part1(input))
+    println("Part 1: ", part1(input)[1])
     println("Part 2: ", part2(input))
 end
 
