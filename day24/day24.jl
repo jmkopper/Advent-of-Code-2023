@@ -44,7 +44,7 @@ function part2(hail)
     p2, v2 = hail[2][1], hail[2][2]
     p3, v3 = hail[3][1], hail[3][2]
     A, B, C, D = cross_coeffs.([p2 .- p1, v2 .- v1, p3 .- p2, v3 .- v2])
-    M = vcat(hcat(A, B), hcat(C, D))
+    M = Rational{BigInt}.(vcat(hcat(A, B), hcat(C, D))) # Force integer solutions
     rhs = [cross(p1, v1) - cross(p2, v2); cross(p2, v2) - cross(p3, v3)]
     sol = M\rhs
     return sum(sol[4:end])
@@ -54,7 +54,7 @@ function main()
     input = readlines("day24/input.txt")
     hail = [parse_hail(line) for line in input]
     println("Part 1: ", part1(hail))
-    println("Part 2: ", (Int ∘ round)(part2(hail))) # may be off by ±1
+    println("Part 2: ", Int(part2(hail))) # may be off by ±1
 end
 
 main()
