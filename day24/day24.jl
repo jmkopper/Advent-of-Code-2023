@@ -54,7 +54,7 @@ function main()
     input = readlines("day24/input.txt")
     hail = [parse_hail(line) for line in input]
     println("Part 1: ", part1(hail))
-    println("Part 2: ", Int(part2(hail))) # may be off by ±1
+    println("Part 2: ", Int(part2(hail)))
 end
 
 main()
