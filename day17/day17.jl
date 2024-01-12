@@ -8,7 +8,7 @@ struct Node
 end
 
 function neighbors(node::Node)
-    n = []
+    n::Vector{Node} = []
     consec_dir = node.prev === nothing ? (0, 0) : (node.x - node.prev[1], node.y - node.prev[2])
     for (dx, dy) in [(0, 1), (0, -1), (1, 0), (-1, 0)]
         (dx, dy) == .-consec_dir && continue # Can't go backwards
@@ -23,10 +23,10 @@ function neighbors(node::Node)
     return n
 end
 
-function ultraneighbors(node::Node)
+function ultraneighbors(node)
     node.prev === nothing && return [Node(1, 2, (1, 1), 1), Node(2, 1, (1, 1), 1)]
 
-    n = []
+    n::Vector{Node} = []
     consec_dir = (node.x - node.prev[1], node.y - node.prev[2])
     for (dx, dy) in [(0, 1), (0, -1), (1, 0), (-1, 0)]
         (dx, dy) == .-consec_dir && continue # Can't go backwards
@@ -49,9 +49,9 @@ function dijkstra(grid, nhbr_func; start_coords=(1,1))
     s = Node(start_coords[1], start_coords[2], nothing, 0)
     pq = PriorityQueue{Node, Int}()
     enqueue!(pq,  s=> 0)
-    dist = Dict(s => 0)
-    visited = Set()
-    prev = Dict()
+    dist::Dict{Node, Int} = Dict(s => 0)
+    visited::Set{Node} = Set()
+    prev::Dict{Node, Node} = Dict()
     while !isempty(pq)
         u = dequeue!(pq)
         push!(visited, u)
