@@ -24,18 +24,6 @@ function walk(instructions)
     return area + div(steps, 2) + 1
 end
 
-function fixinstructions(input)
-    hs = [line[3] for line in input]
-    dirs = []
-    for h in hs
-        lastdig = h[end-1]
-        dir = DIG_TO_DIR[lastdig]
-        num = parse(Int, h[3:end-2]; base = 16)
-        push!(dirs, (dir, num))
-    end
-    return dirs
-end
-
 function part2(input)
     instructions = [
         (DIG_TO_DIR[line[3][end-1]], parse(Int, line[3][3:end-2]; base = 16)) for
