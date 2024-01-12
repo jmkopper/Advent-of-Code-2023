@@ -2,7 +2,7 @@ hash(xs) = reduce((x, c) -> (x + Int(c)) * 17 % 256, xs, init=0)
 scoreBox(box) = length(box) == 0 ? 0 : sum(i * lens[2] for (i, lens) in enumerate(box))
 
 function part2(steps)
-    boxes = [[] for _ in 1:256]
+    boxes = [Tuple{String, Int}[] for _ in 1:256]
 
     for step in steps
         typeIdx = findfirst(x -> x == '-' || x == '=', step)
